@@ -9,14 +9,27 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
+###The data that we are going to present is called "Employee Salaries In 2014".
+
+###This is Summary and Subset of the data
 ```{r}
-summary(cars)
+require("jsonlite")
+require("RCurl")
+# Change the USER and PASS below to be your UTEid
+df <- data.frame(fromJSON(getURL(URLencode('129.152.144.84:5001/rest/native/?query="select * from employee_salaries_20142"'),httpheader=c(DB='jdbc:oracle:thin:@129.152.144.84:1521/PDBF15DV.usuniversi01134.oraclecloud.internal', USER='cs329e_bth679', PASS='orcl_bth679', MODE='native_mode', MODEL='model', returnDimensions = 'False', returnFor = 'JSON'), verbose = TRUE), ))
+
+summary(df)
+head(df)
 ```
 
-You can also embed plots, for example:
+###Below here are 3 data wrangling sets that we found very interesting
 
-```{r, echo=FALSE}
-plot(cars)
+###This is the first set
+```{r}
+df %>% select(CURRENT_ANNUAL_SALARY, DEPARTMENT, POSITION_TITLE) %>% filter(CURRENT_ANNUAL_SALARY >= 80000, DEPARTMENT %in% c("POL", "DOT", "DTS", "HHS", "FRS")) %>% ggplot(aes(x = POSITION_TITLE, y = CURRENT_ANNUAL_SALARY, color = DEPARTMENT)) + geom_point()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+###This is the second set
+```{r}
+df %>% select(CURRENT_ANNUAL_SALARY, DEPARTMENT, GENDER) %>% group_by(GENDER) %>% filter(DEPARTMENT %in% c("POL","HHS")) %>% ggplot(aes(x = DEPARTMENT, y = CURRENT_ANNUAL_SALARY, color = GENDER)) + geom_point()
+```
